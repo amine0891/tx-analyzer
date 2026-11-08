@@ -1,0 +1,84 @@
+services:
+  mongo:
+    image: mongo:7.0
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      APP_NAME: ${APP_NAME:-TX Analyzer}
+      APP_ENV: ${APP_ENV:-development}
+      MONGODB_URI: mongodb://mongo:27017
+      MONGODB_DATABASE: ${MONGODB_DATABASE:-tx_analyzer}
+      HOST: 0.0.0.0
+      PORT: ${PORT:-8000}
+      REQUEST_DELAY_SECONDS: ${REQUEST_DELAY_SECONDS:-0.5}
+      TOXICITY_LIGHT_THRESHOLD: ${TOXICITY_LIGHT_THRESHOLD:-0.5}
+      TOXICITY_HIGH_THRESHOLD: ${TOXICITY_HIGH_THRESHOLD:-0.75}
+    ports:
+      - "${PORT:-8000}:${PORT:-8000}"
+    volumes:
+      - model_cache:/root/.cache
+      - ./output:/app/output
+
+  scraper:
+    build: .
+    profiles: ["scraping"]
+    restart: "no"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      MONGODB_URI: mongodb://mongo:27017
+      MONGODB_DATABASE: ${MONGODB_DATABASE:-tx_analyzer}
+      REQUEST_DELAY_SECONDS: ${REQUEST_DELAY_SECONDS:-0.5}
+    command: ["python", "scripts/collect.py"]
+
+  worker:
+    build: .
+    profiles: ["crawler"]
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      APP_NAME: ${APP_NAME:-TX Analyzer}
+      APP_ENV: ${APP_ENV:-development}
+      MONGODB_URI: mongodb://mongo:27017
+      MONGODB_DATABASE: ${MONGODB_DATABASE:-tx_analyzer}
+      REQUEST_DELAY_SECONDS: ${REQUEST_DELAY_SECONDS:-0.5}
+      COLLECT_INTERVAL_SECONDS: ${COLLECT_INTERVAL_SECONDS:-86400}
+    command: ["python", "scripts/worker.py"]
+
+  manual-collector:
+    build: .
+    profiles: ["manual"]
+    restart: "no"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      MONGODB_URI: mongodb://mongo:27017
+      MONGODB_DATABASE: ${MONGODB_DATABASE:-tx_analyzer}
+      REQUEST_DELAY_SECONDS: ${REQUEST_DELAY_SECONDS:-0.5}
+      MANUAL_BROWSER_TIMEOUT_SECONDS: ${MANUAL_BROWSER_TIMEOUT_SECONDS:-900}
+    ports:
+      - "127.0.0.1:7900:7900"
+    command: ["python", "scripts/collect_manual.py"]
+
+volumes:
+  mongo_data:
+  model_cache:

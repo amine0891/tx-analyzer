@@ -1,0 +1,22 @@
+# Secrets et configuration locale
+.env
+.env.*
+!.env.example
+
+# Environnements Python et caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Données et résultats générés
+/data/
+/output/
+
+# Documents et archives de livraison
+*.docx
+*.zip
+lepoint.ipynb
