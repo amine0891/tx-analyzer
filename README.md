@@ -1,5 +1,9 @@
 # TX Analyzer
 
+![Animation pédagogique : sources, URL, extraction, MongoDB, Detoxify et résultats](docs/assets/pipeline.gif)
+
+[Version statique du schéma](docs/assets/pipeline-poster.png)
+
 **Des sitemaps aux statistiques de toxicité : collecte, traitement NLP, persistance et API.**
 
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
@@ -20,7 +24,44 @@ TX Analyzer découvre les articles de huit sources de presse, extrait leur texte
 - Classification multilingue par lots, statistiques par source et graphique PNG.
 - API REST avec validation des requêtes et documentation OpenAPI interactive.
 
+
+## Résultats présentés dans le rapport
+
+Le rapport de livraison documente une analyse complète de **13 598 articles sur huit sources**, après import des collectes Playwright et mise à jour des prédictions. Il s’agit de l’instantané du rapport, et non d’un compteur actualisé depuis la base.
+
+| Articles analysés | Sources | Le Point après déduplication | GameSpot après déduplication |
+| :---: | :---: | :---: | :---: |
+| **13 598** | **8** | **794** | **807** |
+
+![Graphique du rapport : parts d’articles légèrement et fortement toxiques par source sur 13 598 articles](docs/assets/resultats-toxicite.png)
+
+Le graphique utilise les seuils de 0,50 et 0,75. L’axe des pourcentages est resserré : les valeurs restent faibles. Les résultats décrivent ce corpus et les sorties du modèle; ils ne permettent pas de classer globalement les médias.
+
+### Aperçu de l’API
+
+![Capture du rapport : Swagger présente GET /health et POST /predict avec le formulaire JSON](docs/assets/api-swagger.png)
+
+L’interface FastAPI expose les deux routes et permet d’essayer une prédiction depuis le navigateur. Voir [le contrat de l’API](docs/api-et-donnees.md).
+
+<details>
+<summary><strong>Voir le stockage MongoDB et une étape de l’analyse</strong></summary>
+
+![Capture MongoDB Compass du rapport : 13 598 documents dans articles](docs/assets/mongodb-articles.png)
+
+La capture illustre le stockage des articles, leur source, leur URL et les champs de classification.
+
+![Capture intermédiaire du rapport : 8 096 articles parcourus sur 12 009](docs/assets/analyse-progression.png)
+
+Cette capture montre une étape intermédiaire, antérieure à l’analyse complète de 13 598 articles. Elle illustre les journaux de progression.
+
+</details>
+
+[Consulter les légendes et la provenance des visuels](docs/visuels.md).
+
 ## Vue du pipeline
+
+<details>
+<summary>Ouvrir le diagramme technique des deux parcours de collecte</summary>
 
 ```mermaid
 flowchart LR
@@ -37,6 +78,8 @@ flowchart LR
     J --> K[Graphique PNG]
     L[API POST /predict] --> I
 ```
+
+</details>
 
 Le collecteur intégré utilise des files pour sa reprise; le notebook suit son propre parcours d’export et d’import. Les guides détaillent chaque mécanisme et les fonctions associées.
 
@@ -99,6 +142,7 @@ Le plafond de jobs traités ne garantit pas autant d’articles valides. Le [gui
 | [Utilisation](docs/utilisation.md) | Commandes, configuration, analyse et dépannage |
 | [Playwright](docs/playwright.md) | Installation, connexion CDP, cellules et import JSONL |
 | [API et données](docs/api-et-donnees.md) | Routes REST, scores et collections MongoDB |
+| [Galerie du rapport](docs/visuels.md) | Captures, graphique, chronologie et provenance |
 | [Contribuer](CONTRIBUTING.md) | Adapter une source et préparer une modification |
 
 ## Limites actuelles
