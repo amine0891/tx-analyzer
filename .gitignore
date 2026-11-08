@@ -19,3 +19,11 @@ __pycache__/
 # Documents et archives de livraison
 *.docx
 *.zip
+
+# Notebook et artefacts locaux
+*.jsonl
+.ipynb_checkpoints/
+.browser-profile/
+*.egg-info/
+build/
+dist/
